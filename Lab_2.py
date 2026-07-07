@@ -1,9 +1,7 @@
-# Vigenere Cipher
 def vigenere_encrypt(text, key):
     key = key.upper()
     encrypted = ""
     j = 0
-
     for ch in text:
         if ch.isalpha():
             shift = ord(key[j % len(key)]) - ord('A')
@@ -39,7 +37,6 @@ def rail_fence_encrypt(text, rails):
         fence.append([])
     rail = 0
     direction = 1
-
     for ch in text:
         fence[rail].append(ch)
         if rail == 0:
@@ -67,7 +64,6 @@ def rail_fence_decrypt(cipher, rails):
         counts.append(pattern.count(r))
     rows = []
     index = 0
-
     for count in counts:
         rows.append(list(cipher[index:index + count]))
         index += count
@@ -80,26 +76,20 @@ def rail_fence_decrypt(cipher, rails):
 # ---------------- Main Function ----------------
 def main():
     # Vigenere Cipher
-    plain_text = "ATTACKATDAWN"
-    key = "LEMON"
-
+    plain_text = "SUDIP_DADA"
+    key = "MON"
     encrypted = vigenere_encrypt(plain_text, key)
     decrypted = vigenere_decrypt(encrypted, key)
-
     print("Vigenere Cipher")
     print("Plain Text :", plain_text)
     print("Encrypted  :", encrypted)
     print("Decrypted  :", decrypted)
-
     print()
-
     # Rail Fence Cipher
-    plain_text = "DEFENDTHEEASTWALL"
+    plain_text = "SUDIP_DADA"
     rails = 3
-
     encrypted = rail_fence_encrypt(plain_text, rails)
     decrypted = rail_fence_decrypt(encrypted, rails)
-
     print("Rail Fence Cipher")
     print("Plain Text :", plain_text)
     print("Encrypted  :", encrypted)

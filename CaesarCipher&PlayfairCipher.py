@@ -1,109 +1,103 @@
-# Vigenere Cipher
-def vigenere_encrypt(text, key):
-    key = key.upper()
+# Caesar Cipher
+def caesar_encrypt(text, key):
     encrypted = ""
-    j = 0
-
     for ch in text:
-        if ch.isalpha():
-            shift = ord(key[j % len(key)]) - ord('A')
-            if ch.isupper():
-                base = ord('A')
-            else:
-                base = ord('a')
-            encrypted += chr((ord(ch) - base + shift) % 26 + base)
-            j += 1
+        # Check uppercase letters
+        if ch >= 'A' and ch <= 'Z':
+            encrypted = encrypted + chr(((ord(ch) - ord('A') + key) % 26) + ord('A'))
+        # Check lowercase letters
+        elif ch >= 'a' and ch <= 'z':
+            encrypted = encrypted + chr(((ord(ch) - ord('a') + key) % 26) + ord('a'))
+        # Keep spaces and symbols unchanged
         else:
-            encrypted += ch
+            encrypted = encrypted + ch
     return encrypted
-def vigenere_decrypt(text, key):
+def caesar_decrypt(text, key):
+    return caesar_encrypt(text, -key)
+
+# ---------------- Playfair Cipher ----------------
+def build_matrix(key):
     key = key.upper()
-    decrypted = ""
-    j = 0
+    key = key.replace("J", "I")
+    letters = []
+    # Add key letters
+    for ch in key:
+        if ch.isalpha() and ch not in letters:
+            letters.append(ch)
+    # Add remaining letters
+    alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
+    for ch in alphabet:
+        if ch not in letters:
+            letters.append(ch)
+    matrix = []
+    index = 0
+    for i in range(5):
+        row = []
+        for j in range(5):
+            row.append(letters[index])
+            index = index + 1
+        matrix.append(row)
+    return matrix
+def find_position(matrix, letter):
+    for i in range(5):
+        for j in range(5):
+            if matrix[i][j] == letter:
+                return i, j
+def playfair_encrypt(text, key):
+    matrix = build_matrix(key)
+    text = text.upper()
+    text = text.replace("J", "I")
+    plain = ""
     for ch in text:
         if ch.isalpha():
-            shift = ord(key[j % len(key)]) - ord('A')
-            if ch.isupper():
-                base = ord('A')
-            else:
-                base = ord('a')
-            decrypted += chr((ord(ch) - base - shift) % 26 + base)
-            j += 1
+            plain = plain + ch
+    pairs = []
+    i = 0
+    while i < len(plain):
+        first = plain[i]
+        if i + 1 < len(plain):
+            second = plain[i + 1]
         else:
-            decrypted += ch
-    return decrypted
-# ---------------- Rail Fence Cipher ----------------
-def rail_fence_encrypt(text, rails):
-    fence = []
-    for i in range(rails):
-        fence.append([])
-    rail = 0
-    direction = 1
-
-    for ch in text:
-        fence[rail].append(ch)
-        if rail == 0:
-            direction = 1
-        elif rail == rails - 1:
-            direction = -1
-        rail += direction
+            second = "X"
+        if first == second:
+            pairs.append(first + "X")
+            i = i + 1
+        else:
+            pairs.append(first + second)
+            i = i + 2
     cipher = ""
-    for row in fence:
-        cipher += "".join(row)
+    for pair in pairs:
+        a = pair[0]
+        b = pair[1]
+        r1, c1 = find_position(matrix, a)
+        r2, c2 = find_position(matrix, b)
+        # Same row
+        if r1 == r2:
+            cipher = cipher + matrix[r1][(c1 + 1) % 5]
+            cipher = cipher + matrix[r2][(c2 + 1) % 5]
+
+        # Same column
+        elif c1 == c2:
+            cipher = cipher + matrix[(r1 + 1) % 5][c1]
+            cipher = cipher + matrix[(r2 + 1) % 5][c2]
+        # Rectangle rule
+        else:
+            cipher = cipher + matrix[r1][c2]
+            cipher = cipher + matrix[r2][c1]
     return cipher
-def rail_fence_decrypt(cipher, rails):
-    pattern = []
-    rail = 0
-    direction = 1
-    for i in range(len(cipher)):
-        pattern.append(rail)
-        if rail == 0:
-            direction = 1
-        elif rail == rails - 1:
-            direction = -1
-        rail += direction
-    counts = []
-    for r in range(rails):
-        counts.append(pattern.count(r))
-    rows = []
-    index = 0
+plain_text = "SUDIP_MONARCHY"
+key = 3
+encrypted = caesar_encrypt(plain_text, key)
+decrypted = caesar_decrypt(encrypted, key)
 
-    for count in counts:
-        rows.append(list(cipher[index:index + count]))
-        index += count
-    pointers = [0] * rails
-    plain = ""
-    for r in pattern:
-        plain += rows[r][pointers[r]]
-        pointers[r] += 1
-    return plain
-# ---------------- Main Function ----------------
-def main():
-    # Vigenere Cipher
-    plain_text = "ATTACKATDAWN"
-    key = "LEMON"
-
-    encrypted = vigenere_encrypt(plain_text, key)
-    decrypted = vigenere_decrypt(encrypted, key)
-
-    print("Vigenere Cipher")
-    print("Plain Text :", plain_text)
-    print("Encrypted  :", encrypted)
-    print("Decrypted  :", decrypted)
-
-    print()
-
-    # Rail Fence Cipher
-    plain_text = "DEFENDTHEEASTWALL"
-    rails = 3
-
-    encrypted = rail_fence_encrypt(plain_text, rails)
-    decrypted = rail_fence_decrypt(encrypted, rails)
-
-    print("Rail Fence Cipher")
-    print("Plain Text :", plain_text)
-    print("Encrypted  :", encrypted)
-    print("Decrypted  :", decrypted)
-# Run Program
-if __name__ == "__main__":
-    main()
+print("Caesar Cipher")
+print("Plain Text :", plain_text)
+print("Encrypted  :", encrypted)
+print("Decrypted  :", decrypted)
+print()
+playfair_key = "SUDIP_MONARCHY"
+playfair_text = "WEAPON_GUN"
+playfair_cipher = playfair_encrypt(playfair_text, playfair_key)
+print("Playfair Cipher")
+print("Plain Text :", playfair_text)
+print("Encrypted  :", playfair_cipher)
